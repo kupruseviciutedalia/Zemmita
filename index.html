@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zemmita</title>
+<meta name="description" content="Derliaus perteklius iš kaimynų daržų: daržovės, vaisiai, uogos ir medus tiesiai iš augintojų.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 30V15' stroke='%231c2315' stroke-width='2.6' stroke-linecap='round' fill='none'/%3E%3Cpath d='M16 17C16 9 10 5 3 5c0 8 5 12 13 12Z' fill='%23264d0b'/%3E%3Cpath d='M16 14c0-6 5-10 13-10 0 7-5 10-13 10Z' fill='%23e8791c'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout idea: a quiet greenhouse-glass page; listings sit like stalls in rows,
+     and the only loud element is the pumpkin-orange price tag on each one. */
+  --bg:#edf1e8; --surface:#fafcf6; --ink:#1c2315; --muted:#5b6650; --line:#cdd6c1;
+  --leaf:#264d0b; --leaf-ink:#f3f8ea; --tag:#e8791c; --tag-ink:#231302;
+  --ok:#2c7428; --warn:#9a5b00; --bad:#b3261e;
+  --font-display:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#11160d; --surface:#1a2114; --ink:#e6ecd9; --muted:#9ba78c; --line:#313c27;
+    --leaf:#aad27c; --leaf-ink:#12200a; --tag:#f08c33; --tag-ink:#1f1002;
+    --ok:#7ccf6f; --warn:#f0b24a; --bad:#ff8b80;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11160d; --surface:#1a2114; --ink:#e6ecd9; --muted:#9ba78c; --line:#313c27;
+  --leaf:#aad27c; --leaf-ink:#12200a; --tag:#f08c33; --tag-ink:#1f1002;
+  --ok:#7ccf6f; --warn:#f0b24a; --bad:#ff8b80;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:1rem;line-height:1.5}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;letter-spacing:-.02em}
+h2{font-size:1.75rem;font-weight:600;line-height:1.15}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+a{color:inherit}
+img{max-width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--tag);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:16px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding:18px 0}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--font-display);font-weight:700;font-size:1.4rem;letter-spacing:-.03em}
+.brand svg{width:30px;height:30px;flex:none}
+nav{display:flex;flex-wrap:wrap;gap:4px}
+nav a{text-decoration:none;font-weight:600;padding:.45rem .85rem;border-radius:999px;display:inline-flex;align-items:center;gap:.4rem}
+nav a:hover{background:color-mix(in srgb,var(--leaf) 12%,transparent)}
+nav a[aria-current="page"]{background:var(--leaf);color:var(--leaf-ink)}
+.badge{background:var(--tag);color:var(--tag-ink);border-radius:999px;font-size:.75rem;font-weight:700;min-width:1.35rem;height:1.35rem;display:inline-grid;place-items:center;padding:0 .35rem;font-variant-numeric:tabular-nums}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border:1.5px solid var(--leaf);background:var(--leaf);color:var(--leaf-ink);font-weight:700;padding:.7rem 1.15rem;border-radius:12px;cursor:pointer;text-decoration:none}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink);filter:none}
+.btn.danger{background:transparent;color:var(--bad);border-color:var(--bad)}
+.btn.small{padding:.45rem .8rem;border-radius:10px;font-size:.92rem}
+.btn[disabled]{opacity:.55;cursor:default}
+
+/* hero */
+.hero{background:var(--leaf);color:var(--leaf-ink);border-radius:28px;padding:clamp(24px,5vw,56px);display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(20px,4vw,48px);align-items:center}
+.hero h1{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:600;line-height:1.12;letter-spacing:-.03em}
+.hero p{font-size:1.1rem;max-width:34rem;margin-top:18px}
+.hero .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.hero .btn{background:var(--leaf-ink);color:var(--leaf);border-color:var(--leaf-ink)}
+.hero .btn.ghost{background:transparent;color:var(--leaf-ink);border-color:color-mix(in srgb,var(--leaf-ink) 45%,transparent)}
+.today{background:color-mix(in srgb,var(--leaf-ink) 10%,transparent);border:1px solid color-mix(in srgb,var(--leaf-ink) 25%,transparent);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:4px}
+.today .eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.8;margin-bottom:6px}
+.today-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px dashed color-mix(in srgb,var(--leaf-ink) 30%,transparent);background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;cursor:pointer;color:inherit}
+.today-row:first-of-type{border-top:0}
+.today-row b{font-family:var(--font-display);font-size:1.15rem;display:block;line-height:1.15}
+.today-row span span{font-size:.9rem;opacity:.85}
+
+/* price tag: the one loud element */
+.tag{flex:none;font-family:var(--font-display);font-weight:700;font-size:1.05rem;background:var(--tag);color:var(--tag-ink);padding:.3rem .65rem .3rem 1.45rem;position:relative;transform:rotate(-3deg);clip-path:polygon(13px 0,100% 0,100% 100%,13px 100%,0 50%);font-variant-numeric:tabular-nums;white-space:nowrap;transition:transform .18s ease}
+.tag::before{content:"";position:absolute;left:12px;top:50%;width:6px;height:6px;border-radius:50%;background:var(--surface);transform:translateY(-50%)}
+.tag small{font-family:var(--font-body);font-weight:600;font-size:.72rem}
+.card:hover .tag,.today-row:hover .tag{transform:rotate(2deg) scale(1.04)}
+
+/* sections */
+main{padding-bottom:64px}
+section.view{display:flex;flex-direction:column;gap:28px;padding-top:8px}
+.head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:10px 20px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;list-style:none;margin:0;padding:0;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+.steps li::before{content:counter(s);font-family:var(--font-display);font-weight:700;font-size:2.2rem;line-height:1;color:var(--tag);display:block;margin-bottom:10px}
+.steps p{color:var(--muted);margin-top:6px}
+
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.filters input[type=search],.filters select{padding:.6rem .8rem;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);min-width:0}
+.filters input[type=search]{flex:1 1 220px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;font-size:.8rem;font-weight:600;padding:.2rem .6rem;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.chip{cursor:pointer;font-size:.9rem;padding:.4rem .85rem}
+button.chip[aria-pressed="true"]{background:var(--leaf);color:var(--leaf-ink);border-color:var(--leaf)}
+.chip.ghost{border-style:dashed;color:var(--muted)}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.card{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:0;overflow:hidden;cursor:pointer;position:relative}
+.card:hover{border-color:var(--leaf)}
+.ph{display:grid;place-items:center;aspect-ratio:4/3;width:100%;background:repeating-linear-gradient(100deg,color-mix(in srgb,var(--leaf) 16%,var(--surface)) 0 14px,color-mix(in srgb,var(--leaf) 7%,var(--surface)) 14px 28px);overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph-label{font-family:var(--font-display);font-weight:700;font-size:1.5rem;color:color-mix(in srgb,var(--leaf) 60%,var(--surface));text-align:center;padding:0 12px;line-height:1.05}
+.card-body{display:flex;flex-direction:column;gap:6px;padding:16px 16px 18px}
+.card-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:10px}
+.card-title{font-family:var(--font-display);font-weight:600;font-size:1.25rem;line-height:1.15;flex:1 1 6rem;min-width:0;overflow-wrap:anywhere}
+.card-meta{color:var(--muted);font-size:.92rem}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:18px;padding:28px;text-align:center;color:var(--muted)}
+
+/* forms */
+form .sec{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;margin:0;min-width:0}
+form legend{font-family:var(--font-display);font-weight:700;font-size:1.2rem;padding:0 6px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:8px}
+.f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f.wide{grid-column:1/-1}
+.f > span:first-child{font-weight:600;font-size:.95rem}
+.f em{font-style:normal;color:var(--bad)}
+.f small{color:var(--muted)}
+.f input:not([type=checkbox]),.f select,.f textarea{padding:.65rem .8rem;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);width:100%}
+.f textarea{min-height:6.5rem;resize:vertical}
+.f [aria-invalid="true"]{border-color:var(--bad)}
+.err{color:var(--bad);font-size:.88rem;font-weight:600}
+.check{display:flex;gap:10px;align-items:flex-start}
+.check input{width:1.2rem;height:1.2rem;margin-top:.15rem;flex:none;accent-color:var(--leaf)}
+.note{border-left:4px solid var(--tag);background:color-mix(in srgb,var(--tag) 10%,var(--surface));padding:12px 14px;border-radius:0 12px 12px 0}
+.note.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 9%,var(--surface))}
+.note.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--surface))}
+.preview{max-width:220px;border-radius:12px;border:1px solid var(--line)}
+
+/* status */
+.pill{display:inline-flex;align-items:center;gap:.4rem;font-weight:700;font-size:.82rem;padding:.25rem .65rem;border-radius:999px;border:1.5px solid currentColor}
+.pill::before{content:"";width:.55rem;height:.55rem;border-radius:50%;background:currentColor}
+.pill.pending,.pill.withdraw{color:var(--warn)}
+.pill.approved{color:var(--ok)}
+.pill.approved::before{border-radius:2px}
+.pill.rejected,.pill.removed{color:var(--bad)}
+.pill.rejected::before,.pill.removed::before{clip-path:polygon(0 0,100% 0,50% 100%);border-radius:0}
+
+/* rows (my listings, review) */
+.row{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.row-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.row-head h3{font-size:1.25rem}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 18px;margin:0}
+.kv div{min-width:0}
+.kv dt{font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.review{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px}
+.review .ph{border-radius:12px;aspect-ratio:1}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:.95rem}
+.checks li::before{flex:none;width:1.35rem;height:1.35rem;border-radius:5px;display:grid;place-items:center;font-weight:800;font-size:.8rem;color:var(--surface);margin-top:.1rem}
+.checks .ok::before{content:"✓";background:var(--ok)}
+.checks .warn::before{content:"!";background:var(--warn)}
+.checks .block::before{content:"✕";background:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.reject-box{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.reject-box input{flex:1 1 240px;padding:.5rem .7rem;border:1.5px solid var(--line);border-radius:10px;background:var(--bg)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+
+/* dialog */
+dialog{border:0;border-radius:22px;padding:0;background:var(--surface);color:var(--ink);width:min(720px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
+dialog::backdrop{background:rgba(10,14,6,.6)}
+.dlg{display:flex;flex-direction:column}
+.dlg .ph{aspect-ratio:16/9}
+.dlg-body{padding:22px;display:flex;flex-direction:column;gap:16px}
+.dlg-title{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 18px}
+.dlg-title h2{font-size:2rem}
+.dlg .tag{font-size:1.4rem}
+.contact{font-family:var(--font-display);font-weight:700;font-size:1.3rem}
+
+.rules{max-width:65ch}
+.rules li{margin-bottom:8px}
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:.9rem;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr}
+  .fields{grid-template-columns:1fr}
+  .review{grid-template-columns:1fr}
+  .review .ph{max-width:220px}
+}
+@media (prefers-reduced-motion:reduce){.tag{transition:none}.card:hover .tag,.today-row:hover .tag{transform:rotate(-3deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#pradzia" aria-label="Zemmita, pradžia">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 30V15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M16 17C16 9 10 5 3 5c0 8 5 12 13 12Z" fill="var(--leaf)"/><path d="M16 14c0-6 5-10 13-10 0 7-5 10-13 10Z" fill="var(--tag)"/></svg>
+      Zemmita
+    </a>
+    <nav aria-label="Pagrindinis meniu">
+      <a href="#skelbimai">Skelbimai</a>
+      <a href="#pateikti">Pateikti skelbimą</a>
+      <a href="#mano">Mano skelbimai</a>
+      <a href="#patikra" id="nav-admin" hidden>Patikra <span class="badge" id="nav-badge" hidden>0</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- PRADŽIA -->
+    <section class="view" id="v-pradzia">
+      <div class="hero">
+        <div>
+          <h1>Derliaus perteklius iš kaimynų daržų</h1>
+          <p>Žmonės, kurie augina sau, parduoda tai, ko nesuvalgo. Susitariate tiesiogiai su augintoju ir atsiimate šalia namų.</p>
+          <div class="actions">
+            <a class="btn" href="#skelbimai">Peržiūrėti skelbimus</a>
+            <a class="btn ghost" href="#pateikti">Pateikti skelbimą</a>
+          </div>
+        </div>
+        <div class="today" id="today">
+          <span class="eyebrow">Naujausi skelbimai</span>
+          <p id="today-empty">Kraunami skelbimai…</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <h2>Kaip tai veikia</h2>
+        <ol class="steps">
+          <li><h3>Augintojas pateikia skelbimą</h3><p>Nurodo produktą, kiekį, kainą, vietovę ir kaip jį galima atsiimti.</p></li>
+          <li><h3>Zemmita peržiūri skelbimą</h3><p>Viešai rodomi tik patvirtinti skelbimai. Už produkto saugą atsako pardavėjas.</p></li>
+          <li><h3>Pirkėjas susisiekia ir atsiima</h3><p>Skambinate pardavėjui, susitariate dėl laiko ir atsiskaitote tiesiogiai su juo.</p></li>
+        </ol>
+      </div>
+
+      <div class="stack">
+        <div class="head"><h2>Šiuo metu siūloma</h2><a class="btn ghost small" href="#skelbimai">Visi skelbimai</a></div>
+        <div class="grid" id="home-grid"></div>
+      </div>
+    </section>
+
+    <!-- SKELBIMAI -->
+    <section class="view" id="v-skelbimai" hidden>
+      <div class="head"><div><h2>Skelbimai</h2><p class="muted" id="list-count">Kraunami skelbimai…</p></div></div>
+      <div class="filters">
+        <input type="search" id="q" placeholder="Ieškoti: pomidorai, moliūgai, medus…" aria-label="Ieškoti skelbimų">
+        <select id="f-city-filter" aria-label="Vietovė"><option value="">Visos vietovės</option></select>
+        <select id="f-how-filter" aria-label="Atsiėmimo būdas">
+          <option value="">Atsiėmimas ir pristatymas</option>
+          <option value="pickup">Tik atsiėmimas</option>
+          <option value="delivery">Pardavėjas pristato</option>
+        </select>
+      </div>
+      <div class="chips" id="cat-chips" role="group" aria-label="Kategorija"></div>
+      <div class="grid" id="list-grid"></div>
+    </section>
+
+    <!-- PATEIKTI -->
+    <section class="view" id="v-pateikti" hidden>
+      <div><h2>Pateikti skelbimą</h2><p class="muted">Skelbimas viešai rodomas tik po Zemmita patikros. Laukai su <em style="color:var(--bad);font-style:normal">*</em> yra privalomi.</p></div>
+      <div class="note bad" id="form-noaccess" hidden></div>
+      <div class="note ok" id="form-done" hidden>
+        <p><strong>Skelbimas pateiktas patikrai.</strong> Kai jis bus patvirtintas, atsiras viešame sąraše. Būseną matysite skiltyje „Mano skelbimai“ šiame įrenginyje ir šioje naršyklėje.</p>
+        <p id="done-nostore" hidden>Jūsų naršyklė neleidžia įsiminti skelbimo, todėl jo būsenos čia nematysite. Jei reikės skelbimą nuimti, parašykite mums.</p>
+        <p class="actions" style="margin-top:10px"><a class="btn small" href="#mano">Mano skelbimai</a><button class="btn ghost small" type="button" id="again">Pateikti dar vieną</button></p>
+      </div>
+      <form id="form" class="stack" novalidate>
+        <fieldset class="sec">
+          <legend>Pardavėjas</legend>
+          <div class="fields">
+            <label class="f"><span>Vardas <em>*</em></span><input id="f-name" autocomplete="name" maxlength="80"><span class="err" id="e-name"></span></label>
+            <label class="f"><span>Telefono numeris <em>*</em></span><input id="f-phone" type="tel" autocomplete="tel" placeholder="+370 6xx xxxxx" maxlength="24"><span class="err" id="e-phone"></span></label>
+            <label class="f"><span>El. paštas</span><input id="f-email" type="email" autocomplete="email" maxlength="120"><small>Nerodomas viešai.</small><span class="err" id="e-email"></span></label>
+            <label class="f"><span>Kas jūs esate? <em>*</em></span>
+              <select id="f-status">
+                <option value="">Pasirinkite</option>
+                <option value="perteklius">Auginu sau, parduodu perteklių</option>
+                <option value="sodininkas">Sodininkų bendrijos narys</option>
+                <option value="ukininkas">Ūkininkas</option>
+                <option value="registruotas">Esu registruotas VMVT</option>
+              </select><span class="err" id="e-status"></span></label>
+            <label class="f wide"><span>VMVT registravimo numeris <em id="vmvt-req" hidden>*</em></span><input id="f-vmvt" maxlength="40"><small>Jei turite. Kiaušiniams numeris privalomas.</small><span class="err" id="e-vmvt"></span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="sec">
+          <legend>Produktas</legend>
+          <div class="fields">
+            <label class="f"><span>Pavadinimas <em>*</em></span><input id="f-title" maxlength="70" placeholder="Pvz., Šiltnamio pomidorai"><span class="err" id="e-title"></span></label>
+            <label class="f"><span>Kategorija <em>*</em></span><select id="f-cat"><option value="">Pasirinkite</option></select><span class="err" id="e-cat"></span></label>
+            <label class="f wide"><span>Aprašymas <em>*</em></span><textarea id="f-desc" maxlength="600" placeholder="Kaip augintas, kada skintas, kas svarbu pirkėjui."></textarea><span class="err" id="e-desc"></span></label>
+            <label class="f"><span>Veislė</span><input id="f-variety" maxlength="60"><small>Nurodykite bulvėms, obuoliams, kriaušėms, pomidorams ir salotoms.</small></label>
+            <label class="f"><span>Kilmės šalis <em>*</em></span><input id="f-origin" value="Lietuva" maxlength="40"><span class="err" id="e-origin"></span></label>
+            <label class="f wide check" id="bees-wrap" hidden><input type="checkbox" id="f-bees"><span>Mano bičių šeimos registruotos Ūkinių gyvūnų registre.</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="sec">
+          <legend>Kiekis ir kaina</legend>
+          <div class="fields">
+            <label class="f"><span>Turimas kiekis <em>*</em></span><input id="f-qty" inputmode="decimal" placeholder="Pvz., 10"><span class="err" id="e-qty"></span></label>
+            <label class="f"><span>Vienetas <em>*</em></span><select id="f-unit"></select></label>
+            <label class="f"><span>Kaina už vienetą, EUR <em>*</em></span><input id="f-price" inputmode="decimal" placeholder="Pvz., 1,50"><span class="err" id="e-price"></span></label>
+            <label class="f check" style="align-self:end;padding-bottom:.6rem"><input type="checkbox" id="f-neg"><span>Kaina derinama</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="sec">
+          <legend>Kada ir kur</legend>
+          <div class="fields">
+            <label class="f"><span>Galima nuo <em>*</em></span><input id="f-from" type="date"><span class="err" id="e-from"></span></label>
+            <label class="f"><span>Galima iki</span><input id="f-to" type="date"><small>Po šios dienos skelbimas viešai neberodomas.</small><span class="err" id="e-to"></span></label>
+            <label class="f"><span>Miestas arba rajonas <em>*</em></span><input id="f-city" list="cities" maxlength="50" placeholder="Pvz., Vilnius"><span class="err" id="e-city"></span></label>
+            <label class="f"><span>Mikrorajonas arba kaimas <em>*</em></span><input id="f-area" maxlength="50" placeholder="Pvz., Lazdynai"><span class="err" id="e-area"></span></label>
+            <div class="f wide"><span>Kaip pirkėjas gaus produktą? <em>*</em></span>
+              <label class="check"><input type="checkbox" id="f-pickup" checked><span>Atsiims iš manęs</span></label>
+              <label class="check"><input type="checkbox" id="f-delivery"><span>Galiu pristatyti pats</span></label>
+              <span class="err" id="e-how"></span></div>
+            <label class="f wide" id="delnote-wrap" hidden><span>Kur pristatote</span><input id="f-delnote" maxlength="100" placeholder="Pvz., Vilniuje šeštadieniais"></label>
+          </div>
+          <datalist id="cities"><option value="Vilnius"><option value="Kaunas"><option value="Klaipėda"><option value="Šiauliai"><option value="Panevėžys"><option value="Alytus"><option value="Marijampolė"><option value="Vilniaus r."><option value="Kauno r."><option value="Trakų r."></datalist>
+        </fieldset>
+
+        <fieldset class="sec">
+          <legend>Nuotrauka</legend>
+          <div class="fields">
+            <label class="f wide"><span>Produkto nuotrauka</span><input id="f-photo" type="file" accept="image/*"><small>Viena nuotrauka. Ji sumažinama jūsų įrenginyje prieš įkeliant.</small><span class="err" id="e-photo"></span></label>
+            <img id="photo-preview" class="preview" alt="Pasirinktos nuotraukos peržiūra" hidden>
+          </div>
+        </fieldset>
+
+        <fieldset class="sec">
+          <legend>Patvirtinu, kad</legend>
+          <div class="stack" style="gap:10px;margin-top:8px">
+            <label class="check"><input type="checkbox" id="f-own"><span>produktą užauginau pats savo darže, sode ar bityne;</span></label>
+            <label class="check"><input type="checkbox" id="f-resp"><span>esu atsakingas už produkto saugą ir teisėtumą;</span></label>
+            <label class="check"><input type="checkbox" id="f-show"><span>sutinku, kad mano vardas ir telefono numeris būtų rodomi patvirtintame skelbime.</span></label>
+            <span class="err" id="e-confirm"></span>
+          </div>
+        </fieldset>
+
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Svetainė<input id="f-web" tabindex="-1" autocomplete="off"></label></div>
+        <div class="actions"><button class="btn" type="submit" id="submit">Pateikti patikrai</button><span class="err" id="e-form" role="alert"></span></div>
+      </form>
+    </section>
+
+    <!-- MANO -->
+    <section class="view" id="v-mano" hidden>
+      <div class="head"><div><h2>Mano skelbimai</h2><p class="muted">Čia matote iš šio įrenginio pateiktus skelbimus ir jų patikros būseną.</p></div><a class="btn small" href="#pateikti">Pateikti skelbimą</a></div>
+      <div class="stack" id="mine-list"><div class="empty">Kraunama…</div></div>
+    </section>
+
+    <!-- PATIKRA -->
+    <section class="view" id="v-patikra" hidden>
+      <div class="head"><div><h2>Skelbimų patikra</h2><p class="muted" id="admin-sub">Kraunama…</p></div><button class="btn ghost small" type="button" id="logout" hidden>Atsijungti</button></div>
+      <form id="login" class="row" style="max-width:420px" novalidate hidden>
+        <label class="f"><span>El. paštas</span><input id="l-email" type="email" autocomplete="username"></label>
+        <label class="f"><span>Slaptažodis</span><input id="l-pass" type="password" autocomplete="current-password"></label>
+        <div class="actions"><button class="btn" type="submit" id="l-submit">Prisijungti</button><span class="err" id="l-err" role="alert"></span></div>
+      </form>
+      <div id="admin-panel" class="stack" hidden>
+        <div class="tabs" id="admin-tabs" role="group" aria-label="Būsena"></div>
+        <div class="stack" id="admin-list"><div class="empty">Kraunama…</div></div>
+      </div>
+    </section>
+
+    <!-- TAISYKLĖS -->
+    <section class="view" id="v-taisykles" hidden>
+      <div><h2>Taisyklės ir privatumas</h2><p class="muted">Laikina redakcija.</p></div>
+      <ul class="rules">
+        <li>Skelbti galima tik savo užaugintus šviežius vaisius, uogas, daržoves, žalumynus, bulves ir savo bityno medų. Kiaušinius – tik turint VMVT numerį.</li>
+        <li>Perdirbtų gaminių (uogienių, marinuotų daržovių, kepinių), mėsos, pieno ir žuvies produktų skelbti negalima.</li>
+        <li>Už produkto saugą, kokybę ir teisės aktų laikymąsi atsako pardavėjas. Zemmita maisto netvarko, nelaiko ir neveža.</li>
+        <li>Zemmita peržiūri skelbimo informaciją prieš jį paskelbiant ir gali skelbimą atmesti arba nuimti.</li>
+        <li>Pirkėjas ir pardavėjas dėl atsiėmimo ir atsiskaitymo susitaria tiesiogiai.</li>
+        <li>Pardavėjo vardas ir telefono numeris rodomi patvirtintame skelbime. El. paštą mato tik Zemmita.</li>
+      </ul>
+      <div class="stack rules">
+        <h3>Jūsų duomenys</h3>
+        <p>Pateikdami skelbimą nurodote vardą, telefono numerį ir, jei norite, el. paštą. Šie duomenys naudojami tik skelbimui peržiūrėti ir pirkėjui su jumis susisiekti. Skelbimą ir kartu savo duomenis galite ištrinti skiltyje „Mano skelbimai“ tame pačiame įrenginyje, iš kurio jį pateikėte.</p>
+        <p id="contact-line" hidden>Jei skelbimo ištrinti patys negalite arba turite klausimų dėl savo duomenų, rašykite: <strong id="contact-email"></strong></p>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>Zemmita</span><span class="chips" style="gap:18px"><a href="#taisykles">Taisyklės ir privatumas</a><a href="#patikra">Administratoriui</a></span></footer>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlg-h"><div class="dlg" id="dlg-inner"></div></dialog>
+
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const CATS = [
+  ['darzoves','Daržovės'],['vaisiai','Vaisiai'],['uogos','Uogos'],
+  ['zalumynai','Žalumynai ir prieskoninės žolės'],['bulves','Bulvės'],
+  ['medus','Medus'],['kiausiniai','Kiaušiniai']
+];
+const UNITS = ['kg','vnt.','ryšulėlis','dėžutė','maišas','stiklainis','l','10 vnt.'];
+const STATUS = {pending:'Laukia patikros', approved:'Paskelbtas', rejected:'Atmestas', removed:'Nuimtas'};
+const SELLER = {perteklius:'Augina sau, parduoda perteklių', sodininkas:'Sodininkų bendrijos narys', ukininkas:'Ūkininkas', registruotas:'Registruotas VMVT'};
+const ROUTES = ['pradzia','skelbimai','pateikti','mano','patikra','taisykles'];
+const IMG_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+const MINE_KEY = 'zemmita-mano-skelbimai';
+
+const CFG = window.ZEMMITA_CONFIG || {};
+const sb = (CFG.url && CFG.key && window.supabase && typeof window.supabase.createClient === 'function')
+  ? window.supabase.createClient(CFG.url, CFG.key) : null;
+
+const S = {signedIn:false, isAdmin:false, ready:false, listings:null, listFailed:false, lastPublic:0,
+  mine:null, queue:[], adminLoaded:false, photos:new Map(),
+  filters:{q:'',cat:'',city:'',how:''}, tab:'pending', photoData:null};
+
+const catLabel = id => (CATS.find(c => c[0] === id) || [,'Kita'])[1];
+const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+const money = n => new Intl.NumberFormat('lt-LT',{style:'currency',currency:'EUR'}).format(Number(n) || 0);
+const fmtDate = iso => { if (!iso) return ''; const d = new Date(iso + 'T12:00:00'); return isNaN(d) ? '' : new Intl.DateTimeFormat('lt-LT',{day:'numeric',month:'long'}).format(d); };
+const fmtQty = n => new Intl.NumberFormat('lt-LT',{maximumFractionDigits:2}).format(Number(n) || 0);
+const place = l => [l.area, l.city].filter(Boolean).join(', ');
+const num = v => { const n = parseFloat(String(v).replace(/\s/g,'').replace(',','.')); return Number.isFinite(n) ? n : NaN; };
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID()
+  : '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
+
+/* ---------- this device's own listings (id + private key) ---------- */
+function mineKeys() { try { const v = JSON.parse(localStorage.getItem(MINE_KEY) || '[]'); return Array.isArray(v) ? v.filter(x => x && x.id && x.token) : []; } catch { return []; } }
+function saveMineKeys(list) { try { localStorage.setItem(MINE_KEY, JSON.stringify(list.slice(-50))); return true; } catch { return false; } }
+
+/* ---------- data layer: the only part that talks to the database ---------- */
+const must = r => { if (r.error) throw r.error; return r.data; };
+const pubFrom = r => ({id:r.id, title:r.title, category:r.category, description:r.description, variety:r.variety, origin:r.origin,
+  qty:Number(r.qty), unit:r.unit, price:Number(r.price), negotiable:!!r.negotiable, from:r.available_from, to:r.available_to || '',
+  city:r.city, area:r.area, pickup:!!r.pickup, delivery:!!r.delivery, deliveryNote:r.delivery_note, sellerName:r.seller_name,
+  phone:r.phone, vmvtNo:r.vmvt_no, hasPhoto:!!r.has_photo, approvedAt:r.approved_at ? Date.parse(r.approved_at) : 0});
+const subFrom = r => ({...pubFrom(r), status:r.status, reason:r.reason, email:r.email, sellerStatus:r.seller_status,
+  beesRegistered:!!r.bees_registered, confirmOwn:!!r.confirm_own, confirmResp:!!r.confirm_resp, confirmShow:!!r.confirm_show,
+  createdAt:r.created_at ? Date.parse(r.created_at) : 0});
+const ADMIN_COLS = 'id,status,reason,created_at,reviewed_at,seller_name,phone,email,seller_status,vmvt_no,title,category,description,variety,origin,bees_registered,qty,unit,price,negotiable,available_from,available_to,city,area,pickup,delivery,delivery_note,confirm_own,confirm_resp,confirm_show,has_photo';
+
+const store = {
+  async init() {
+    if (!sb) return;
+    const { data } = await sb.auth.getSession();
+    await store.refreshRole(data && data.session);
+  },
+  async refreshRole(session) {
+    S.signedIn = !!session; S.isAdmin = false;
+    if (session) { const r = await sb.rpc('is_admin'); S.isAdmin = r.data === true; }
+  },
+  async loadPublic() {
+    return must(await sb.from('listings').select('*').order('approved_at', {ascending:false}).limit(500)).map(pubFrom);
+  },
+  photo(key) {
+    if (S.photos.has(key)) return S.photos.get(key);
+    const [kind, id] = key.split(':');
+    const p = Promise.resolve(sb.from(kind === 'sub' ? 'submissions' : 'listing_photos').select('photo').eq('id', id).maybeSingle())
+      .then(r => { const src = r.data && r.data.photo; return typeof src === 'string' && IMG_RE.test(src) ? src : null; })
+      .catch(() => null);
+    S.photos.set(key, p);
+    return p;
+  },
+  async submit(item, photo) {
+    const id = uuid(), token = uuid();
+    must(await sb.from('submissions').insert({
+      id, token, seller_name:item.sellerName, phone:item.phone, email:item.email, seller_status:item.sellerStatus, vmvt_no:item.vmvtNo,
+      title:item.title, category:item.category, description:item.description, variety:item.variety, origin:item.origin,
+      bees_registered:item.beesRegistered, qty:item.qty, unit:item.unit, price:item.price, negotiable:item.negotiable,
+      available_from:item.from, available_to:item.to || null, city:item.city, area:item.area, pickup:item.pickup,
+      delivery:item.delivery, delivery_note:item.deliveryNote, confirm_own:item.confirmOwn, confirm_resp:item.confirmResp,
+      confirm_show:item.confirmShow, photo:photo || null
+    }));
+    return saveMineKeys([...mineKeys(), {id, token}]);
+  },
+  async loadMine() {
+    const keys = mineKeys();
+    if (!keys.length) return [];
+    const rows = must(await sb.rpc('my_listings', {p_tokens: keys.map(k => k.token)}));
+    return rows.map(r => ({id:r.id, title:r.title, category:r.category, qty:Number(r.qty), unit:r.unit, price:Number(r.price),
+      city:r.city, area:r.area, status:r.status, reason:r.reason, createdAt:Date.parse(r.created_at)}));
+  },
+  async withdraw(id) {
+    const key = mineKeys().find(k => k.id === id);
+    if (!key) return;
+    const res = must(await sb.rpc('withdraw_listing', {p_id:id, p_token:key.token}));
+    if (res !== 'removed') saveMineKeys(mineKeys().filter(k => k.id !== id));
+  },
+  async loadQueue() {
+    return must(await sb.from('submissions').select(ADMIN_COLS).order('created_at', {ascending:true}).limit(1000)).map(subFrom);
+  },
+  async review(id, status, reason) {
+    const rows = must(await sb.from('submissions').update({status, reason, reviewed_at:new Date().toISOString()}).eq('id', id).select('id'));
+    if (!rows || !rows.length) throw new Error('not_updated');
+  },
+  async remove(id) { must(await sb.from('submissions').delete().eq('id', id)); },
+  async signIn(email, password) {
+    const r = await sb.auth.signInWithPassword({email, password});
+    if (r.error) throw r.error;
+    await store.refreshRole(r.data && r.data.session);
+  },
+  async signOut() { await sb.auth.signOut(); S.signedIn = false; S.isAdmin = false; S.queue = []; S.adminLoaded = false; }
+};
+
+/* ---------- routing ---------- */
+function route() {
+  let r = (location.hash || '').slice(1);
+  if (!ROUTES.includes(r)) r = 'pradzia';
+  for (const id of ROUTES) $('#v-' + id).hidden = id !== r;
+  $$('nav a').forEach(a => a.getAttribute('href') === '#' + r ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current'));
+  if (r === 'pradzia' || r === 'skelbimai') refreshPublic(false);
+  if (r === 'mano') refreshMine();
+  if (r === 'patikra') showAdmin();
+  if (r === 'pateikti') formAccess();
+}
+
+/* ---------- public list ---------- */
+async function refreshPublic(force) {
+  if (!sb || !S.ready) return;
+  if (!force && Date.now() - S.lastPublic < 15000) return;
+  S.lastPublic = Date.now();
+  try { S.listings = await store.loadPublic(); S.listFailed = false; }
+  catch { if (S.listings === null) S.listFailed = true; }
+  renderPublic();
+}
+function active() {
+  const t = today();
+  return (S.listings || []).filter(l => !l.to || l.to >= t).sort((a,b) => (b.approvedAt || 0) - (a.approvedAt || 0));
+}
+function howChips(l) {
+  return (l.pickup ? '<span class="chip">Atsiėmimas</span>' : '') + (l.delivery ? '<span class="chip">Pristato pardavėjas</span>' : '');
+}
+function phHTML(key, label) {
+  return `<span class="ph" data-photo="${esc(key || '')}"><span class="ph-label">${esc(label)}</span></span>`;
+}
+function cardHTML(l) {
+  return `<button type="button" class="card" data-open="${esc(l.id)}">
+    ${phHTML(l.hasPhoto ? 'pub:' + l.id : '', catLabel(l.category))}
+    <span class="card-body">
+      <span class="card-top">
+        <span class="card-title">${esc(l.title)}</span>
+        <span class="tag">${esc(money(l.price))}<small> / ${esc(l.unit)}</small></span>
+      </span>
+      <span class="card-meta">${esc(place(l))}</span>
+      <span class="chips">${howChips(l)}</span>
+    </span></button>`;
+}
+function fillPhotos(root) {
+  $$('.ph[data-photo]', root).forEach(el => {
+    const key = el.dataset.photo;
+    if (!key || el.dataset.done || !sb) return;
+    el.dataset.done = '1';
+    store.photo(key).then(src => {
+      if (!src || !el.isConnected) return;
+      const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.src = src;
+      el.replaceChildren(img);
+    });
+  });
+}
+function renderPublic() {
+  const all = active();
+  const homeGrid = $('#home-grid'), grid = $('#list-grid'), todayBox = $('#today');
+  $$('.today-row', todayBox).forEach(n => n.remove());
+  const te = $('#today-empty');
+  if (S.listings === null) {
+    const msg = !sb ? 'Svetainė dar neprijungta prie duomenų bazės.'
+      : S.listFailed ? 'Skelbimų kol kas nepavyksta pasiekti. Pabandykite vėliau.' : 'Kraunami skelbimai…';
+    te.hidden = false; te.textContent = msg;
+    homeGrid.innerHTML = grid.innerHTML = `<div class="empty">${esc(msg)}</div>`;
+    $('#list-count').textContent = msg;
+    return;
+  }
+  if (!all.length) { te.hidden = false; te.textContent = 'Skelbimų dar nėra. Būkite pirmi.'; }
+  else {
+    te.hidden = true;
+    todayBox.insertAdjacentHTML('beforeend', all.slice(0,3).map(l =>
+      `<button type="button" class="today-row" data-open="${esc(l.id)}"><span><b>${esc(l.title)}</b><span>${esc(place(l))}</span></span><span class="tag">${esc(money(l.price))}<small> / ${esc(l.unit)}</small></span></button>`).join(''));
+  }
+  homeGrid.innerHTML = all.length ? all.slice(0,6).map(cardHTML).join('') : '<div class="empty">Skelbimų dar nėra. <a href="#pateikti">Pateikite pirmą skelbimą.</a></div>';
+
+  const cities = [...new Set(all.map(l => l.city).filter(Boolean))].sort((a,b) => a.localeCompare(b,'lt'));
+  const sel = $('#f-city-filter');
+  sel.innerHTML = '<option value="">Visos vietovės</option>' + cities.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if (!cities.includes(S.filters.city)) S.filters.city = '';
+  sel.value = S.filters.city;
+
+  const f = S.filters, q = f.q.trim().toLocaleLowerCase('lt');
+  const shown = all.filter(l =>
+    (!f.cat || l.category === f.cat) && (!f.city || l.city === f.city) &&
+    (!f.how || (f.how === 'pickup' ? l.pickup : l.delivery)) &&
+    (!q || [l.title, l.description, l.variety, l.area, l.city, catLabel(l.category)].join(' ').toLocaleLowerCase('lt').includes(q)));
+  $('#list-count').textContent = shown.length === all.length ? `Aktyvių skelbimų: ${all.length}` : `Rodoma ${shown.length} iš ${all.length}`;
+  grid.innerHTML = shown.length ? shown.map(cardHTML).join('') : `<div class="empty">${all.length ? 'Pagal pasirinktus filtrus skelbimų nėra.' : 'Skelbimų dar nėra.'}</div>`;
+  fillPhotos(document);
+}
+function renderCatChips() {
+  $('#cat-chips').innerHTML = [['','Visos'], ...CATS].map(([id,label]) =>
+    `<button type="button" class="chip" data-cat="${id}" aria-pressed="${S.filters.cat === id}">${esc(label)}</button>`).join('');
+}
+function openListing(id) {
+  const l = (S.listings || []).find(x => x.id === id);
+  if (!l) return;
+  const rows = [
+    ['Turimas kiekis', `${fmtQty(l.qty)} ${l.unit}`],
+    ['Kategorija', catLabel(l.category)],
+    l.variety && ['Veislė', l.variety],
+    ['Kilmės šalis', l.origin || 'Lietuva'],
+    ['Galima', `nuo ${fmtDate(l.from)}${l.to ? ' iki ' + fmtDate(l.to) : ''}`],
+    ['Vietovė', place(l)],
+    l.delivery && l.deliveryNote && ['Pristatymas', l.deliveryNote],
+    l.vmvtNo && ['VMVT registravimo nr.', l.vmvtNo]
+  ].filter(Boolean);
+  const phone = String(l.phone || '');
+  $('#dlg-inner').innerHTML = `
+    ${phHTML(l.hasPhoto ? 'pub:' + l.id : '', catLabel(l.category))}
+    <div class="dlg-body">
+      <div class="dlg-title"><h2 id="dlg-h">${esc(l.title)}</h2><span class="tag">${esc(money(l.price))}<small> / ${esc(l.unit)}</small></span></div>
+      <div class="chips">${howChips(l)}${l.negotiable ? '<span class="chip">Kaina derinama</span>' : ''}</div>
+      <p>${esc(l.description)}</p>
+      <dl class="kv">${rows.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+      <div class="note">
+        <p class="muted">Pardavėjas</p>
+        <p class="contact">${esc(l.sellerName || 'Pardavėjas')} · <a href="tel:${esc(phone.replace(/[^+\d]/g,''))}">${esc(phone)}</a></p>
+        <p class="muted">Paskambinkite ir susitarkite dėl laiko. Atsiskaitoma tiesiogiai su pardavėju.</p>
+      </div>
+      <div class="actions"><button type="button" class="btn ghost" data-close>Uždaryti</button></div>
+    </div>`;
+  const d = $('#dlg');
+  if (typeof d.showModal === 'function') { if (!d.open) d.showModal(); } else d.setAttribute('open','');
+  fillPhotos(d);
+}
+function closeDlg() { const d = $('#dlg'); if (typeof d.close === 'function' && d.open) d.close(); else d.removeAttribute('open'); }
+
+/* ---------- submit form ---------- */
+const FIELDS = ['name','phone','email','status','vmvt','title','cat','desc','variety','origin','qty','unit','price','from','to','city','area','delnote'];
+const BOXES = ['bees','neg','pickup','delivery','own','resp','show'];
+function formValues() {
+  const v = {};
+  for (const k of FIELDS) v[k] = $('#f-' + k).value;
+  for (const k of BOXES) v[k] = $('#f-' + k).checked;
+  return v;
+}
+function syncForm() {
+  const cat = $('#f-cat').value, st = $('#f-status').value;
+  $('#bees-wrap').hidden = cat !== 'medus';
+  $('#vmvt-req').hidden = !(cat === 'kiausiniai' || st === 'registruotas');
+  $('#delnote-wrap').hidden = !$('#f-delivery').checked;
+}
+function setErr(key, msg, inputId) {
+  const e = $('#e-' + key); if (e) e.textContent = msg || '';
+  const i = inputId === null ? null : $('#f-' + (inputId || key));
+  if (i) msg ? i.setAttribute('aria-invalid','true') : i.removeAttribute('aria-invalid');
+}
+function validate(v) {
+  const errs = {};
+  const need = (k, msg) => { if (!String(v[k]).trim()) errs[k] = msg; };
+  need('name','Įrašykite vardą.');
+  if (!/^\+?[\d ()-]{8,24}$/.test(v.phone.trim())) errs.phone = 'Įrašykite telefono numerį, pvz., +370 612 34567.';
+  if (v.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email.trim())) errs.email = 'El. pašto adresas atrodo neteisingas.';
+  need('status','Pasirinkite, kas jūs esate.');
+  if ((v.cat === 'kiausiniai' || v.status === 'registruotas') && !v.vmvt.trim()) errs.vmvt = v.cat === 'kiausiniai' ? 'Kiaušiniams reikia VMVT numerio.' : 'Įrašykite VMVT registravimo numerį.';
+  need('title','Įrašykite produkto pavadinimą.');
+  need('cat','Pasirinkite kategoriją.');
+  if (v.desc.trim().length < 10) errs.desc = 'Aprašykite produktą bent keliais žodžiais.';
+  need('origin','Įrašykite kilmės šalį.');
+  const qty = num(v.qty), price = num(v.price);
+  if (!(qty > 0) || qty > 99999) errs.qty = 'Įrašykite kiekį skaičiumi, didesniu už 0.';
+  if (!(price > 0) || price > 10000) errs.price = 'Įrašykite kainą eurais, pvz., 1,50.';
+  if (!v.from) errs.from = 'Pasirinkite datą.';
+  if (v.to && v.to < today()) errs.to = 'Ši data jau praėjo.';
+  else if (v.to && v.from && v.to < v.from) errs.to = 'Pabaigos data negali būti ankstesnė už pradžios.';
+  need('city','Įrašykite miestą arba rajoną.');
+  need('area','Įrašykite mikrorajoną arba kaimą.');
+  if (!v.pickup && !v.delivery) errs.how = 'Pažymėkite bent vieną būdą.';
+  if (!(v.own && v.resp && v.show)) errs.confirm = 'Pažymėkite visus tris patvirtinimus.';
+  return errs;
+}
+async function shrink(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('image')); i.src = url; });
+    let max = 720, q = .74, out = '';
+    for (let k = 0; k < 6; k++) {
+      const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.naturalWidth * s)); c.height = Math.max(1, Math.round(img.naturalHeight * s));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      out = c.toDataURL('image/jpeg', q);
+      if (out.length < 150000) break;
+      max = Math.round(max * .82); q = Math.max(.5, q - .06);
+    }
+    return out.length < 200000 && IMG_RE.test(out) ? out : null;
+  } finally { URL.revokeObjectURL(url); }
+}
+function formAccess() {
+  const box = $('#form-noaccess');
+  if (!sb) { box.hidden = false; box.textContent = 'Svetainė dar neprijungta prie duomenų bazės, todėl skelbimo pateikti negalima.'; $('#submit').disabled = true; }
+  else { box.hidden = true; $('#submit').disabled = false; }
+}
+function initFormDefaults() {
+  $('#f-from').value = today(); $('#f-from').min = today(); $('#f-to').min = today();
+  $('#f-origin').value = 'Lietuva'; $('#f-pickup').checked = true;
+}
+async function onSubmit(ev) {
+  ev.preventDefault();
+  const v = formValues(), errs = validate(v);
+  for (const k of ['name','phone','email','status','vmvt','title','cat','desc','origin','qty','price','from','to','city','area']) setErr(k, errs[k]);
+  setErr('how', errs.how, null); setErr('confirm', errs.confirm, null);
+  const first = Object.keys(errs)[0];
+  if (first) {
+    $('#e-form').textContent = 'Patikslinkite pažymėtus laukus.';
+    const el = $('#f-' + first) || $('#e-' + first);
+    if (el) { el.scrollIntoView({block:'center'}); if (el.focus) el.focus({preventScroll:true}); }
+    return;
+  }
+  if (!sb) { formAccess(); return; }
+  const btn = $('#submit'); btn.disabled = true; btn.textContent = 'Pateikiama…'; $('#e-form').textContent = '';
+  const item = {
+    sellerName: v.name.trim(), phone: v.phone.trim(), email: v.email.trim(), sellerStatus: v.status, vmvtNo: v.vmvt.trim(),
+    title: v.title.trim(), category: v.cat, description: v.desc.trim(), variety: v.variety.trim(), origin: v.origin.trim(),
+    beesRegistered: v.cat === 'medus' ? v.bees : false,
+    qty: Math.round(num(v.qty) * 100) / 100, unit: v.unit, price: Math.round(num(v.price) * 100) / 100, negotiable: v.neg,
+    from: v.from, to: v.to || '', city: v.city.trim(), area: v.area.trim(),
+    pickup: v.pickup, delivery: v.delivery, deliveryNote: v.delivery ? v.delnote.trim() : '',
+    confirmOwn: v.own, confirmResp: v.resp, confirmShow: v.show
+  };
+  try {
+    const remembered = $('#f-web').value ? true : await store.submit(item, S.photoData);   // filled trap field = bot
+    $('#form').reset(); $('#form').hidden = true; $('#form-done').hidden = false;
+    $('#done-nostore').hidden = remembered !== false;
+    S.photoData = null; $('#photo-preview').hidden = true;
+    initFormDefaults(); syncForm();
+    $('#form-done').scrollIntoView({block:'center'});
+  } catch (e) {
+    const m = String((e && e.message) || '');
+    $('#e-form').textContent = /too_many_submissions/.test(m) ? 'Šiuo metu pateikta labai daug skelbimų. Pabandykite po valandos.'
+      : /check constraint|violates/.test(m) ? 'Skelbimo duomenys nepriimti. Patikrinkite laukus ir pabandykite dar kartą.'
+      : 'Skelbimo išsaugoti nepavyko. Patikrinkite interneto ryšį ir pabandykite dar kartą.';
+  } finally { btn.disabled = false; btn.textContent = 'Pateikti patikrai'; }
+}
+
+/* ---------- my listings ---------- */
+async function refreshMine() {
+  const box = $('#mine-list');
+  if (!sb) { box.innerHTML = '<div class="empty">Svetainė dar neprijungta prie duomenų bazės.</div>'; return; }
+  if (!mineKeys().length) { S.mine = []; renderMine(); return; }
+  if (S.mine === null) box.innerHTML = '<div class="empty">Kraunama…</div>';
+  try { S.mine = await store.loadMine(); renderMine(); }
+  catch { box.innerHTML = '<div class="empty">Skelbimų nepavyko įkelti. Pabandykite vėliau.</div>'; }
+}
+function renderMine() {
+  const items = S.mine || [];
+  $('#mine-list').innerHTML = items.length ? items.map(it => `
+    <div class="row" data-id="${esc(it.id)}">
+      <div class="row-head"><h3>${esc(it.title)}</h3><span class="pill ${esc(it.status)}">${esc(STATUS[it.status] || it.status)}</span></div>
+      <p class="muted">${esc(catLabel(it.category))} · ${esc(fmtQty(it.qty))} ${esc(it.unit)} · ${esc(money(it.price))} / ${esc(it.unit)} · ${esc(place(it))}</p>
+      ${it.reason && it.status !== 'approved' && it.status !== 'pending' ? `<p class="note bad"><strong>Priežastis:</strong> ${esc(it.reason)}</p>` : ''}
+      <div class="actions"><button type="button" class="btn ghost small" data-withdraw>${it.status === 'approved' ? 'Nuimti skelbimą' : 'Ištrinti'}</button><span class="err" data-msg></span></div>
+    </div>`).join('') : '<div class="empty">Šiame įrenginyje dar nepateikėte nė vieno skelbimo. <a href="#pateikti">Pateikti skelbimą.</a></div>';
+}
+
+/* ---------- review (administrator) ---------- */
+const RISKY = [
+  [/uogien|džem|sirup|sult|marinuot|raugint|konserv|džiovint/i, 'perdirbtas augalinis gaminys'],
+  [/kepin|pyrag|duon|tort|sausain/i, 'kepinys'],
+  [/mės|dešr|lašin|rūkyt|kumpi/i, 'mėsos produktas'],
+  [/pien|sūr|varšk|grietin|svies/i, 'pieno produktas'],
+  [/žuv|silk/i, 'žuvies produktas'],
+  [/gryb/i, 'grybai']
+];
+function autoChecks(it) {
+  const out = [], text = [it.title, it.description].join(' ');
+  if (it.confirmOwn && it.confirmResp && it.confirmShow) out.push(['ok','Pardavėjas pažymėjo visus tris patvirtinimus.']);
+  else out.push(['block','Trūksta pardavėjo patvirtinimų.']);
+  if (it.category === 'kiausiniai') out.push(it.vmvtNo ? ['warn',`Kiaušiniai: patikrinkite VMVT numerį ${it.vmvtNo} registre.`] : ['block','Kiaušiniams reikia VMVT patvirtinimo ir registravimo numerio.']);
+  else if (it.vmvtNo) out.push(['ok',`Nurodytas VMVT numeris: ${it.vmvtNo}.`]);
+  else out.push(['warn',`Pardavėjas be VMVT numerio (${SELLER[it.sellerStatus] || 'statusas nenurodytas'}). Šis reikalavimas tikslinamas su VMVT.`]);
+  if (it.category === 'medus') out.push(it.beesRegistered ? ['ok','Bičių šeimos, pasak pardavėjo, registruotos.'] : ['warn','Medus: pardavėjas nepažymėjo, kad bičių šeimos registruotos.']);
+  const hits = RISKY.filter(([re]) => re.test(text)).map(r => r[1]);
+  if (hits.length) out.push(['warn',`Tekste minima: ${[...new Set(hits)].join(', ')}. Tokiems produktams taikoma atskira VMVT tvarka.`]);
+  else out.push(['ok','Tekste nerasta perdirbtų ar gyvūninių produktų požymių.']);
+  if (/bulv|obuol|kriauš|pomidor|salot/i.test(text) && !it.variety) out.push(['warn','Šiam produktui reikėtų nurodyti veislę.']);
+  if (it.to && it.to < today()) out.push(['block','Skelbimo galiojimo data jau praėjo.']);
+  if (!it.hasPhoto) out.push(['warn','Skelbimas be nuotraukos.']);
+  return out;
+}
+const inTab = (it, tab) => tab === 'rejected' ? (it.status === 'rejected' || it.status === 'removed') : it.status === tab;
+function updateNav() {
+  $('#nav-admin').hidden = !S.isAdmin;
+  const n = S.queue.filter(it => it.status === 'pending').length, b = $('#nav-badge');
+  b.textContent = n; b.hidden = !n;
+}
+async function refreshQueue() {
+  if (!sb || !S.isAdmin) return;
+  try { S.queue = await store.loadQueue(); S.adminLoaded = true; renderAdmin(); }
+  catch { $('#admin-list').innerHTML = '<div class="empty">Skelbimų nepavyko įkelti. Pabandykite vėliau.</div>'; }
+}
+function showAdmin() {
+  const login = $('#login'), panel = $('#admin-panel'), sub = $('#admin-sub');
+  $('#logout').hidden = !S.signedIn;
+  if (!sb) { login.hidden = true; panel.hidden = true; sub.textContent = 'Svetainė dar neprijungta prie duomenų bazės.'; return; }
+  if (!S.ready) { login.hidden = true; panel.hidden = true; sub.textContent = 'Kraunama…'; return; }
+  if (!S.isAdmin) {
+    panel.hidden = true; login.hidden = S.signedIn;
+    sub.textContent = S.signedIn ? 'Ši paskyra neturi administratoriaus teisių.' : 'Prisijunkite administratoriaus paskyra.';
+    return;
+  }
+  login.hidden = true; panel.hidden = false;
+  sub.textContent = 'Patvirtintas skelbimas iš karto atsiranda viešame sąraše.';
+  renderAdmin(); refreshQueue();
+}
+function renderAdmin() {
+  updateNav();
+  const items = S.queue;
+  const tabs = [['pending','Laukia'],['approved','Paskelbti'],['rejected','Atmesti ir nuimti']];
+  $('#admin-tabs').innerHTML = tabs.map(([id,label]) =>
+    `<button type="button" class="chip" data-tab="${id}" aria-pressed="${S.tab === id}">${label} · ${items.filter(it => inTab(it,id)).length}</button>`).join('');
+  if (!S.adminLoaded) { $('#admin-list').innerHTML = '<div class="empty">Kraunama…</div>'; return; }
+  const shown = items.filter(it => inTab(it, S.tab));
+  $('#admin-list').innerHTML = shown.length ? shown.map(it => {
+    const checks = autoChecks(it), blocked = checks.some(c => c[0] === 'block');
+    const kv = [
+      ['Pardavėjas', it.sellerName], ['Telefonas', it.phone], ['El. paštas', it.email || '—'],
+      ['Statusas', SELLER[it.sellerStatus] || '—'], ['VMVT nr.', it.vmvtNo || '—'],
+      ['Kategorija', catLabel(it.category)], ['Veislė', it.variety || '—'], ['Kilmės šalis', it.origin || '—'],
+      ['Kiekis ir kaina', `${fmtQty(it.qty)} ${it.unit}, ${money(it.price)} / ${it.unit}${it.negotiable ? ', derinama' : ''}`],
+      ['Galioja', `nuo ${fmtDate(it.from)}${it.to ? ' iki ' + fmtDate(it.to) : ''}`],
+      ['Vietovė', place(it)],
+      ['Perdavimas', [it.pickup && 'atsiėmimas', it.delivery && ('pristato pardavėjas' + (it.deliveryNote ? ': ' + it.deliveryNote : ''))].filter(Boolean).join('; ')]
+    ];
+    let actions = '';
+    if (it.status === 'pending') actions = `<button type="button" class="btn small" data-act="approve"${blocked ? ' disabled title="Pirma išspręskite raudonai pažymėtus punktus"' : ''}>Patvirtinti ir paskelbti</button><button type="button" class="btn danger small" data-act="ask-reject">Atmesti</button>`;
+    else if (it.status === 'approved') actions = `<button type="button" class="btn danger small" data-act="ask-reject" data-mode="removed">Nuimti nuo viešo sąrašo</button>`;
+    else actions = `<button type="button" class="btn ghost small" data-act="approve"${blocked ? ' disabled' : ''}>Vis dėlto paskelbti</button><button type="button" class="btn danger small" data-act="delete">Ištrinti visam laikui</button>`;
+    return `<div class="row" data-id="${esc(it.id)}">
+      <div class="row-head"><h3>${esc(it.title)}</h3><span class="pill ${esc(it.status)}">${esc(STATUS[it.status] || it.status)}</span></div>
+      <div class="review">
+        ${phHTML(it.hasPhoto ? 'sub:' + it.id : '', it.hasPhoto ? 'Kraunama…' : 'Be nuotraukos')}
+        <div class="stack">
+          <p>${esc(it.description)}</p>
+          <dl class="kv">${kv.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+        </div>
+      </div>
+      <ul class="checks" aria-label="Automatinė patikra">${checks.map(([lvl,t]) => `<li class="${lvl}">${esc(t)}</li>`).join('')}</ul>
+      ${it.reason && inTab(it,'rejected') ? `<p class="note bad"><strong>Priežastis:</strong> ${esc(it.reason)}</p>` : ''}
+      <div class="actions">${actions}<span class="err" data-msg></span></div>
+      <div class="reject-box" hidden>
+        <input aria-label="Priežastis pardavėjui" maxlength="200" placeholder="Priežastis, kurią matys pardavėjas">
+        <button type="button" class="btn danger small" data-act="confirm-reject">Patvirtinti</button>
+        <button type="button" class="btn ghost small" data-act="cancel-reject">Atšaukti</button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty">${S.tab === 'pending' ? 'Laukiančių skelbimų nėra.' : 'Čia kol kas tuščia.'}</div>`;
+  fillPhotos($('#admin-list'));
+}
+async function adminAct(btn) {
+  const row = btn.closest('.row'), act = btn.dataset.act;
+  const it = S.queue.find(x => x.id === row.dataset.id);
+  if (!it) return;
+  const box = $('.reject-box', row), msg = $('[data-msg]', row);
+  if (act === 'ask-reject') { box.hidden = false; box.dataset.mode = btn.dataset.mode || 'rejected'; $('input', box).focus(); return; }
+  if (act === 'cancel-reject') { box.hidden = true; return; }
+  if (act === 'delete' && !btn.dataset.armed) { btn.dataset.armed = '1'; btn.textContent = 'Tikrai ištrinti? Spauskite dar kartą'; return; }
+  let reason = '';
+  if (act === 'confirm-reject') {
+    reason = $('input', box).value.trim();
+    if (!reason) { msg.textContent = 'Įrašykite priežastį.'; return; }
+  }
+  $$('button', row).forEach(b => b.disabled = true); msg.textContent = '';
+  try {
+    if (act === 'approve') { await store.review(it.id, 'approved', ''); it.status = 'approved'; it.reason = ''; }
+    else if (act === 'confirm-reject') { const st = box.dataset.mode === 'removed' ? 'removed' : 'rejected'; await store.review(it.id, st, reason); it.status = st; it.reason = reason; }
+    else if (act === 'delete') { await store.remove(it.id); S.queue = S.queue.filter(x => x.id !== it.id); }
+    S.photos.delete('pub:' + it.id);
+    renderAdmin(); refreshPublic(true);
+  } catch {
+    $$('button', row).forEach(b => b.disabled = false);
+    msg.textContent = 'Veiksmo atlikti nepavyko. Pabandykite dar kartą.';
+  }
+}
+async function onLogin(ev) {
+  ev.preventDefault();
+  const btn = $('#l-submit'), err = $('#l-err');
+  btn.disabled = true; err.textContent = '';
+  try { await store.signIn($('#l-email').value.trim(), $('#l-pass').value); $('#l-pass').value = ''; showAdmin(); }
+  catch { err.textContent = 'Prisijungti nepavyko. Patikrinkite el. paštą ir slaptažodį.'; }
+  finally { btn.disabled = false; }
+}
+
+/* ---------- boot ---------- */
+function start() {
+  $('#f-cat').insertAdjacentHTML('beforeend', CATS.map(([id,l]) => `<option value="${id}">${esc(l)}</option>`).join(''));
+  $('#f-unit').innerHTML = UNITS.map(u => `<option>${esc(u)}</option>`).join('');
+  if (CFG.contactEmail) { $('#contact-line').hidden = false; $('#contact-email').textContent = CFG.contactEmail; }
+  initFormDefaults(); syncForm();
+  renderCatChips(); renderPublic(); route();
+
+  addEventListener('hashchange', route);
+  document.addEventListener('click', e => {
+    const open = e.target.closest('[data-open]'); if (open) { openListing(open.dataset.open); return; }
+    if (e.target.closest('[data-close]')) { closeDlg(); return; }
+    const cat = e.target.closest('[data-cat]'); if (cat) { S.filters.cat = cat.dataset.cat; renderCatChips(); renderPublic(); return; }
+    const tab = e.target.closest('[data-tab]'); if (tab) { S.tab = tab.dataset.tab; renderAdmin(); return; }
+    const act = e.target.closest('[data-act]'); if (act) { adminAct(act); return; }
+    const w = e.target.closest('[data-withdraw]');
+    if (w) {
+      const row = w.closest('.row');
+      if (!w.dataset.armed) { w.dataset.armed = '1'; w.textContent = 'Tikrai? Spauskite dar kartą'; return; }
+      w.disabled = true;
+      store.withdraw(row.dataset.id).then(() => { refreshMine(); refreshPublic(true); })
+        .catch(() => { w.disabled = false; $('[data-msg]', row).textContent = 'Nepavyko. Pabandykite dar kartą.'; });
+    }
+  });
+  $('#dlg').addEventListener('click', e => { if (e.target === $('#dlg')) closeDlg(); });
+  $('#q').addEventListener('input', e => { S.filters.q = e.target.value; renderPublic(); });
+  $('#f-city-filter').addEventListener('change', e => { S.filters.city = e.target.value; renderPublic(); });
+  $('#f-how-filter').addEventListener('change', e => { S.filters.how = e.target.value; renderPublic(); });
+  $('#form').addEventListener('submit', onSubmit);
+  $('#form').addEventListener('change', syncForm);
+  $('#login').addEventListener('submit', onLogin);
+  $('#logout').addEventListener('click', async () => { try { await store.signOut(); } catch {} updateNav(); showAdmin(); });
+  $('#again').addEventListener('click', () => { $('#form-done').hidden = true; $('#form').hidden = false; $('#f-title').focus(); });
+  $('#f-photo').addEventListener('change', async e => {
+    const file = e.target.files && e.target.files[0], prev = $('#photo-preview');
+    S.photoData = null; prev.hidden = true; setErr('photo','');
+    if (!file) return;
+    try {
+      const data = await shrink(file);
+      if (!data) { setErr('photo','Šios nuotraukos nepavyko sumažinti. Pasirinkite kitą.'); return; }
+      S.photoData = data; prev.src = data; prev.hidden = false;
+    } catch { setErr('photo','Šio failo nepavyko perskaityti kaip nuotraukos.'); }
+  });
+
+  store.init().catch(() => {}).then(() => {
+    S.ready = true;
+    updateNav();
+    if (!sb) { route(); return; }
+    refreshPublic(true);
+    setTimeout(() => { if (S.listings === null) { S.listFailed = true; renderPublic(); } }, 10000);
+    route();
+    if (S.isAdmin) refreshQueue();
+    setInterval(() => { if (!document.hidden) refreshPublic(false); }, 60000);
+  });
+}
+start();
+})();
+</script>
+</body>
+</html>
